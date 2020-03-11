@@ -1,0 +1,46 @@
+SELECT cs.custid, cs.orders_placed, cs.avg_spend
+FROM(
+SELECT dop.custid, COUNT(DISTINCT(dop.ordid)) AS orders_placed, ROUND((SUM(dop.qty*dop.price))/COUNT(DISTINCT(dop.ordid)),2) AS avg_spend
+	FROM(SELECT c.custid, dop.ordid, dop.qty, dop.price
+		 FROM(SELECT od.ordid, od.ocust, od.qty, p.price
+			  FROM(SELECT o.ordid, o.ocust, d.pcode, d.qty
+				   FROM details d JOIN orders o ON d.ordid = o.ordid) od
+			  JOIN products p ON od.pcode = p.pcode) dop
+		 JOIN customers c ON c.custid = dop.ocust
+		 UNION
+		 SELECT c.custid, no.ordid, 0, 0 
+		 FROM(SELECT o.ordid, o.ocust
+			  FROM orders o
+		 	  WHERE o.ordid NOT IN(SELECT ordid
+			   					   FROM details)) no
+		 JOIN customers c ON c.custid = no.ocust) dop
+GROUP BY dop.custid) cs
+WHERE cs.avg_spend <> 0
+
+UNION
+
+SELECT sc.custid, sc.orders_placed, CAST(sc.avg_spend AS integer)
+FROM(
+SELECT dop.custid, COUNT(DISTINCT(dop.ordid)) AS orders_placed, ROUND((SUM(dop.qty*dop.price))/COUNT(DISTINCT(dop.ordid)),2) AS avg_spend
+	FROM(SELECT c.custid, dop.ordid, dop.qty, dop.price
+		 FROM(SELECT od.ordid, od.ocust, od.qty, p.price
+			  FROM(SELECT o.ordid, o.ocust, d.pcode, d.qty
+				   FROM details d JOIN orders o ON d.ordid = o.ordid) od
+			  JOIN products p ON od.pcode = p.pcode) dop
+		 JOIN customers c ON c.custid = dop.ocust
+		 UNION
+		 SELECT c.custid, no.ordid, 0, 0 
+		 FROM(SELECT o.ordid, o.ocust
+			  FROM orders o
+		 	  WHERE o.ordid NOT IN(SELECT ordid
+			   					   FROM details)) no
+		 JOIN customers c ON c.custid = no.ocust) dop
+GROUP BY dop.custid) sc
+WHERE sc.avg_spend = 0
+
+UNION
+
+SELECT custid, 0, NULL
+FROM customers
+WHERE custid NOT IN(SELECT ocust
+					FROM orders);

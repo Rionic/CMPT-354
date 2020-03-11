@@ -1,0 +1,9 @@
+SELECT iv.invid
+FROM(
+	 SELECT inv.ordid, min(inv.amount) AS amount, sum(inv.qty * p.price) as costs
+	 FROM (SELECT i.invid, i.ordid, i.amount, d.pcode, d.qty
+	       FROM invoices i JOIN details d ON i.ordid = d.ordid)
+	       inv JOIN products p ON p.pcode = inv.pcode
+	 GROUP BY inv.ordid) final JOIN invoices iv ON final.ordid = iv.ordid
+WHERE final.amount = CAST(final.costs * 1.20 AS NUMERIC(8,2))
+ORDER BY iv.invid ASC;

@@ -1,0 +1,18 @@
+SELECT maxs.ptype, sums.custid
+FROM(SELECT sums.ptype, MAX(sums.qty)
+	 FROM(SELECT cod.custid, SUM(cod.qty) AS qty, p.ptype
+		  FROM(SELECT co.custid, co.ordid, d.pcode, d.qty
+			   FROM(SELECT c.custid, o.ordid
+				    FROM customers c JOIN orders o ON ocust = custid) co
+			   JOIN details d ON co.ordid = d.ordid) cod
+		  JOIN products p ON p.pcode = cod.pcode
+		  GROUP BY cod.custid, p.ptype) sums
+	 GROUP BY sums.ptype) maxs
+JOIN(SELECT cod.custid, SUM(cod.qty) AS qty, p.ptype
+	 FROM(SELECT co.custid, co.ordid, d.pcode, d.qty
+		  FROM(SELECT c.custid, o.ordid
+			   FROM customers c JOIN orders o ON ocust = custid) co
+		  JOIN details d ON co.ordid = d.ordid) cod
+	 JOIN products p ON p.pcode = cod.pcode
+	 GROUP BY cod.custid, p.ptype) sums
+ON maxs.max = sums.qty AND maxs.ptype = sums.ptype;

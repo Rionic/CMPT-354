@@ -1,0 +1,3 @@
+SELECT p.ptype, ROUND(count(*) * AVG(d.qty)/COUNT(DISTINCT(ordid)),2)
+FROM details d JOIN products p ON p.pcode = d.pcode
+GROUP BY p.ptype;

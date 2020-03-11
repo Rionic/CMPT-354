@@ -1,0 +1,12 @@
+SELECT country, COUNT(*)
+FROM customers JOIN orders ON ocust=custid
+     AND EXTRACT(year from odate) = '2016'
+GROUP BY country
+UNION
+SELECT country, 0
+FROM customers
+WHERE country NOT IN(SELECT country
+       FROM customers JOIN orders ON ocust=custid
+       AND EXTRACT(year from odate) = '2016'
+       GROUP BY country)
+GROUP BY country;

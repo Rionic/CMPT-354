@@ -1,0 +1,71 @@
+CREATE TABLE "Researcher" (
+  "Researcher ID" int,
+  "Name" varchar,
+  "Email" varchar,
+  "Organization" varchar,
+  PRIMARY KEY ("Researcher ID")
+);
+
+CREATE TABLE "Call for Grant Proposal" (
+  "Proposal Number" int,
+  "Title" varchar UNIQUE,
+  "Application Deadline" timestamp,
+  "Description" varchar,
+  "Area" varchar,
+  "Call Status" varchar,
+  PRIMARY KEY ("Proposal Number")
+);
+
+CREATE TABLE "Grant Application" (
+  "Application Number" int,
+  "Application Proposal Number" int,
+  "Principal Investigator" varchar,
+  "Other Collaborators" int,
+  "Application Status" varchar,
+  "Money Awarded" int,
+  PRIMARY KEY ("Application Number"),
+  FOREIGN KEY ("Application Proposal Number") REFERENCES "Call for Grant Proposal" ("Proposal Number"),
+  FOREIGN KEY ("Other Collaborators") REFERENCES "Researcher" ("Researcher ID")
+);
+
+CREATE TABLE "Meeting" (
+  "Meeting Date" timestamp,
+  "Call Discussed" varchar,
+  "Reviewer Meeting Name" varchar,
+  "Co-reviewer Meeting Name" varchar,
+  "Participants" int,
+  PRIMARY KEY ("Meeting Date"),
+  FOREIGN KEY ("Call Discussed") REFERENCES "Call for Grant Proposal" ("Title"),
+  FOREIGN KEY ("Participants") REFERENCES "Researcher" ("Researcher ID")
+);
+
+CREATE TABLE "Conflict" (
+  "Conflict Number" int,
+  "Researcher Name" varchar,
+  "Reason" varchar,
+  PRIMARY KEY ("Conflict Number")
+);
+
+CREATE TABLE "Application Review" (
+  "Application Review Number" int,
+  "Reviewer Name" varchar UNIQUE,
+  "Reviewer ID" int,
+  "Co-reviewer ID" int,
+  "Conflicts" int,
+  PRIMARY KEY ("Application Review Number"),
+  FOREIGN KEY ("Application Review Number") REFERENCES "Grant Application" ("Application Number"),
+  FOREIGN KEY ("Reviewer ID") REFERENCES "Researcher" ("Researcher ID"),
+  FOREIGN KEY ("Co-reviewer ID") REFERENCES "Researcher" ("Researcher ID"),
+  FOREIGN KEY ("Conflicts") REFERENCES "Conflict" ("Conflict Number")
+);
+CREATE TABLE "Reviewer Assignment" (
+  "Grant" int,
+  "Reviewer Assignment Name" varchar,
+  "Co-reviewer Name" varchar,
+  "Review Deadline" timestamp,
+  "Submission Status" varchar,
+  PRIMARY KEY ("Grant"),
+  FOREIGN KEY ("Grant") REFERENCES "Call for Grant Proposal" ("Proposal Number"),
+  FOREIGN KEY ("Reviewer Assignment Name") REFERENCES "Application Review" ("Reviewer Name")
+);
+
